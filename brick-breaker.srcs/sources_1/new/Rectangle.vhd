@@ -1,6 +1,6 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use work.Types;
+use work.Types.all;
 
 entity Rectangle is
 port (
@@ -13,7 +13,13 @@ port (
 end Rectangle;
 
 architecture Behavioral of Rectangle is
-	signal outMatrix : matrix (0 to width, 0 to height) := (others => color);
 begin
-	graphics <= outMatrix;
+	process
+    begin
+        for x in 0 to width loop
+            for y in 0 to height loop
+                graphics(x,y) <= shapeColor;
+            end loop;
+        end loop;
+	end process;
 end Behavioral;

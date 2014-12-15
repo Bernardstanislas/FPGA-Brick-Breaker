@@ -1,6 +1,6 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use work.Types;
+use work.Types.all;
 
 entity Ellipse is
 port (
@@ -13,16 +13,15 @@ port (
 end Ellipse;
 
 architecture Behavioral of Ellipse is
-	signal outMatrix : matrix (0 to width, 0 to height) := (others => x"000000");
 begin
     process
     begin
         for x in 0 to width loop
             for y in 0 to height loop
-                outMatrix(i,j) <= color when ((x - width / 2) ** 2) / ((width / 2) ** 2) + ((y - height / 2) ** 2) / ((height / 2) ** 2) <= 1;
+                graphics(x,y) <= shapeColor ;
+                   -- when ((x - width / 2) * (x - width / 2)) / ((width / 2) * (width / 2)) + ((y - height / 2) * (y - height / 2)) / ((height / 2) * (height / 2)) <= 1
+                   -- else x"000000";
             end loop;
         end loop;
 	end process;
-
-	graphics <= outMatrix;
 end Behavioral;

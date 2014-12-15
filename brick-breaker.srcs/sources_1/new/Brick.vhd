@@ -1,6 +1,6 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use work.Types;
+use work.Types.all;
 
 entity Brick is
 generic (
@@ -24,10 +24,6 @@ port (
 end Brick;
 
 architecture Behavioral of Brick is
-	signal x 		: integer;
-	signal y 	 	: integer;
-	signal graphics : matrix (0 to width, 0 to height);
-
 	component BBox is
 	port (
 		setTrigger	:	in 	std_logic;
@@ -54,12 +50,6 @@ architecture Behavioral of Brick is
 	);
 	end component;
 begin
-	getX <= x;
-	getY <= y;
-	getWidth <= width;
-	getHeight <= height;
-	getGraphics <= graphics;
-
-	bbox 		:	BBox port map(setTrigger, setX, setY, width, height, x, y, width, height);
-	rectangle	:	Rectangle port map(width, height, brickColor, graphics);
+	bbox_inst 		:	BBox port map(setTrigger, setX, setY, width, height, getX, getY, getWidth, getHeight);
+	rectangle_inst	:	Rectangle port map(width, height, brickColor, getGraphics);
 end Behavioral;
