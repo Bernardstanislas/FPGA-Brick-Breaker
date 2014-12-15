@@ -66,6 +66,7 @@ architecture Behavioral of display_controller is
    constant C_BLUE       : std_logic_vector(23 downto 0) := x"0000FF";
    constant C_WHITE      : std_logic_vector(23 downto 0) := x"FFFFFF";
    
+   
 begin
     -- Set the video mode to 1920x1080x60Hz (150MHz pixel clock needed)
    hVisible    <= ZERO + 1920;
@@ -82,14 +83,9 @@ begin
 
 color_proc: process(hcounter,vcounter)
     begin
-        color <= C_BLACK;
-        if hcounter < 800 and vcounter < 400 then
-         color <= C_RED;
-        elsif hcounter < 800 then
-         color <= C_GREEN;
-        else
-         color <= C_WHITE;
-        end if;
+        for i in 0 to 11 loop
+            color(i+10) <= hcounter(i);
+        end loop;
 end process;
 
 clk_process: process (clk)
