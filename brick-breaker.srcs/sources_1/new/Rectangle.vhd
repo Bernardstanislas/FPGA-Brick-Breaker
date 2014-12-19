@@ -16,8 +16,8 @@ architecture Behavioral of Rectangle is
 begin
 	process
     begin
-        for x in 0 to width loop
-            for y in 0 to height loop
+        for x in 0 to 50 loop
+            for y in 0 to 20 loop
                 graphics(x,y) <= shapeColor;
             end loop;
         end loop;

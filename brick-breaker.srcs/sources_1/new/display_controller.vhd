@@ -31,6 +31,8 @@ use IEEE.NUMERIC_STD.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
+use work.Types.all;
+
 entity display_controller is
     Port ( clk   : in   STD_LOGIC;
            r     : out  STD_LOGIC_VECTOR (7 downto 0);
@@ -42,7 +44,24 @@ entity display_controller is
 end display_controller;
 
 architecture Behavioral of display_controller is
-    signal color         : STD_LOGIC_VECTOR (23 downto 0);
+    COMPONENT Brick
+    PORT (
+        setTrigger	:	in 	std_logic;
+    
+        setX         :     in     integer;
+        setY         :     in     integer;
+    
+        getX        :     out integer;
+        getY        :     out    integer;
+        getWidth    :    out    integer;
+        getHeight    :    out integer;
+    
+        getGraphics    :    out matrix
+    );
+    
+    END COMPONENT;
+
+   signal color         : STD_LOGIC_VECTOR (23 downto 0);
    
    signal   hcounter    : unsigned(11 downto 0) := (others => '0');
    signal   vcounter    : unsigned(11 downto 0) := (others => '0');
@@ -66,7 +85,13 @@ architecture Behavioral of display_controller is
    constant C_BLUE       : std_logic_vector(23 downto 0) := x"0000FF";
    constant C_WHITE      : std_logic_vector(23 downto 0) := x"FFFFFF";
    
+   signal setTrigger : STD_LOGIC := '1';
+   signal setX : integer := 100;
+   signal setY : integer := 100;
    
+   signal getWidth : integer;
+   signal getHeight : integer;
+   signal graphics : matrix(0 to 50, 0 to 50);
 begin
     -- Set the video mode to 1920x1080x60Hz (150MHz pixel clock needed)
    hVisible    <= ZERO + 1920;
@@ -80,12 +105,21 @@ begin
    vEndSync    <= ZERO + 1080+4+5;
    vMax        <= ZERO + 1080+4+5+36-1;
    hSyncActive <= '1';
+   
+   brick_1 : Brick port map (
+        setTrigger => setTrigger,
+        setX => setX,
+        setY => setY,
+        getWidth => getWidth,
+        getHeight => getHeight,
+        getGraphics => graphics
+   );
 
 color_proc: process(hcounter,vcounter)
     begin
-        for i in 0 to 11 loop
-            color(i+10) <= hcounter(i);
-        end loop;
+        if (to_integer(hcounter) >= setX and to_integer(hcounter) < (setX + getWidth) and to_integer(vcounter) >= setY and to_integer(vcounter) < (setY + getHeight)) then
+            color <= graphics(to_integer(hcounter) - setX, to_integer(vcounter) - setY);
+        end if;
 end process;
 
 clk_process: process (clk)
