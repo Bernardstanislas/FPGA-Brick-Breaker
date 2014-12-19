@@ -88,14 +88,36 @@ architecture Behavioral of display_controller is
     constant C_BLUE       : std_logic_vector(23 downto 0) := x"0000FF";
     constant C_WHITE      : std_logic_vector(23 downto 0) := x"FFFFFF";
     
-    ----------------------------------
-    -- Brick 1 (test brick) signals --
-    ----------------------------------
-    signal triggerSet       : STD_LOGIC := '1';
-    signal brick1_X         : integer := 100;
-    signal brick1_Y         : integer := 100;
-    signal brick1_pixelOut  : std_logic_vector (23 downto 0) := x"000000";
+    --------------------
+    -- Bricks signals --
+    --------------------
+    type bricks_coordinates is array (0 to 9) of integer;
+    type bricks_colors is array (0 to 9) of std_logic_vector (23 downto 0);
+    signal triggerSet       : std_logic := '1';
+    signal bricks_X         : bricks_coordinates := (others => 100);
+    signal bricks_Y         : bricks_coordinates := (others => 100);
+    signal bricks_pixelOut  : bricks_colors := (others => x"000000");
 begin
+    --------------------------
+    -- Init bricks' signals --
+    --------------------------
+    process
+    begin
+        for I in 0 to 9 loop
+            bricks_X(I) <= 100 + 60*I;
+        end loop;
+    end process;
+    
+    generated_bricks : for I in 0 to 9 generate
+        brickx : Brick port map (triggerSet    => triggerSet,
+                                  setX          => bricks_X(I),
+                                  setY          => bricks_Y(I),
+                                  cursorX       => cursorX,
+                                  cursorY       => cursorY,
+                                  pixelOut      => bricks_pixelOut(I)
+                                  );
+    end generate generated_bricks;
+
     -- Set the video mode to 1920x1080x60Hz (150MHz pixel clock needed)
     hVisible    <= ZERO + 1920;
     hStartSync  <= ZERO + 1920+88;
@@ -108,18 +130,6 @@ begin
     vEndSync    <= ZERO + 1080+4+5;
     vMax        <= ZERO + 1080+4+5+36-1;
     hSyncActive <= '1';
- 
-    --------------------
-    -- Brick 1 object --
-    --------------------
-    
-    brick_1 : Brick port map (triggerSet    => triggerSet,
-                              setX          => brick1_X,
-                              setY          => brick1_Y,
-                              cursorX       => cursorX,
-                              cursorY       => cursorY,
-                              pixelOut      => brick1_pixelOut
-                              );
 
 -------------------------------------------
 -- COLOR PROCEDURE                       --
@@ -130,9 +140,11 @@ begin
 -------------------------------------------
 color_proc: process(hcounter,vcounter)
     begin
-        if (brick1_pixelOut /= x"00000000") then
-            color <= brick1_pixelOut;
-        end if;
+        for I in 0 to 9 loop
+            if (bricks_pixelOut(I) /= x"000000") then
+                color <= bricks_pixelOut(I);
+            end if;
+        end loop;
 end process;
 
 
