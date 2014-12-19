@@ -43,8 +43,10 @@ architecture Behavioral of Ball is
         setWidth    :   in  integer;
         setHeight   :   in  integer;
         getWidth    :   out integer;
-        getHeight   :   out integer
-
+        getHeight   :   out integer;
+        
+        setAlive    :   in  std_logic;
+        getAlive    :   out std_logic
 	);
 	end component;
 
@@ -57,6 +59,9 @@ architecture Behavioral of Ball is
     port (
         X          :   in  integer;
         Y          :   in  integer;  
+        
+        alive       :   in std_logic;
+        
         cursorX    :   in  integer;
         cursorY    :   in  integer;
         pixelOut   :   out std_logic_vector 
@@ -90,7 +95,7 @@ begin
         end if;
     end process;
     
-	bbox_inst      :   BBox port map(triggerSet, setX, setY, x, y, width, height, getWidth, getHeight);
+	bbox_inst      :   BBox port map(triggerSet, setX, setY, x, y, width, height, getWidth, getHeight, '1', '1');
 	ellipse_inst   :   Ellipse generic map(width, height, ballColor) 
-                               port map(x, y, cursorX, cursorY, pixelOut);
+                               port map(x, y, '1', cursorX, cursorY, pixelOut);
 end Behavioral;

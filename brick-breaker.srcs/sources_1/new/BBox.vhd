@@ -13,7 +13,10 @@ port (
 	setWidth	: 	in 	integer;
 	setHeight 	: 	in 	integer;
 	getWidth	:	out	integer;
-	getHeight	:	out integer
+	getHeight	:	out integer;
+	
+	setAlive   :   in  std_logic;
+	getAlive   :   out std_logic
 );
 end BBox;
 
@@ -22,11 +25,13 @@ architecture Behavioral of BBox is
 	signal y 	 	: integer;
 	signal width 	: integer;
 	signal height 	: integer;
+	signal alive   : std_logic;
 begin
 	getX <= x;
 	getY <= y;
 	getWidth <= width;
 	getHeight <= height;
+	getAlive <= alive;
 
 	process(triggerSet)
 	begin
@@ -35,6 +40,7 @@ begin
 			y <= setY;
 			width <= setWidth;
 			height <= setHeight;
+			alive <= setAlive;
 		end if;
 	end process;
 end Behavioral;

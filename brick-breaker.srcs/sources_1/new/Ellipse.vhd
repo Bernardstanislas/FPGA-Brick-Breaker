@@ -10,6 +10,9 @@ generic (
 port (
     X          :   in  integer;
     Y          :   in  integer;  
+    
+    alive      :   in std_logic;
+    
     cursorX    :   in  integer;
     cursorY    :   in  integer;
     pixelOut   :   out std_logic_vector 
@@ -18,6 +21,6 @@ end Ellipse;
 
 architecture Behavioral of Ellipse is
 begin
-    pixelOut <= shapeColor when ( ((cursorX-(X+width))**2)/(width**2) + ((cursorY-(Y+height))**2)/(height**2) <= 1 ) 
+    pixelOut <= shapeColor when ( ((cursorX-(X+width))**2)/(width**2) + ((cursorY-(Y+height))**2)/(height**2) <= 1 ) and alive = '1'
                 else x"000000";
 end Behavioral;
