@@ -1,27 +1,23 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use work.Types.all;
 
 entity Ellipse is
+generic (
+	width      :   integer := 20;
+	height	   :   integer := 20;
+	shapeColor :   std_logic_vector := x"FF0000"
+);
 port (
-	width		: 	in	integer;
-	height		:	in 	integer;
-	shapeColor	:	in 	color;
-
-	graphics	:	out matrix
+    X          :   in  integer;
+    Y          :   in  integer;  
+    cursorX    :   in  integer;
+    cursorY    :   in  integer;
+    pixelOut   :   out std_logic_vector 
 );
 end Ellipse;
 
 architecture Behavioral of Ellipse is
 begin
-    process
-    begin
-        for x in 0 to width loop
-            for y in 0 to height loop
-                graphics(x,y) <= shapeColor ;
-                   -- when ((x - width / 2) * (x - width / 2)) / ((width / 2) * (width / 2)) + ((y - height / 2) * (y - height / 2)) / ((height / 2) * (height / 2)) <= 1
-                   -- else x"000000";
-            end loop;
-        end loop;
-	end process;
+    pixelOut <= shapeColor when ( ((cursorX-(X+width))**2)/(width**2) + ((cursorY-(Y+height))**2)/(height**2) <= 1 ) 
+                else x"000000";
 end Behavioral;

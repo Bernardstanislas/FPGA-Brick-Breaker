@@ -1,25 +1,23 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use work.Types.all;
 
 entity Rectangle is
+generic (
+	width      :   integer := 50;
+	height	   :   integer := 20;
+	shapeColor :   std_logic_vector := x"777777"
+);
 port (
-	width		: 	in	integer;
-	height		:	in 	integer;
-	shapeColor	:	in 	color;
-
-	graphics	:	out matrix
+    X          :   in  integer;
+    Y          :   in  integer;  
+    cursorX    :   in  integer;
+    cursorY    :   in  integer;
+    pixelOut   :   out std_logic_vector 
 );
 end Rectangle;
 
 architecture Behavioral of Rectangle is
 begin
-	process
-    begin
-        for x in 0 to 50 loop
-            for y in 0 to 20 loop
-                graphics(x,y) <= shapeColor;
-            end loop;
-        end loop;
-	end process;
+    pixelOut <= shapeColor when (cursorX >= X and cursorX <= X + width and cursorY >= Y and cursorY <= Y + height)
+                else x"000000"; 
 end Behavioral;

@@ -3,15 +3,15 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity BBox is
 port (
-	setTrigger	:	in 	std_logic;
+    triggerSet  :   in  std_logic;
 
-	setX 		: 	in 	integer;
-	setY 		: 	in 	integer;
+    setX        :   in  integer;
+    setY        :   in  integer;
+    getX        :   out integer;
+    getY        :   out integer;
+    
 	setWidth	: 	in 	integer;
 	setHeight 	: 	in 	integer;
-
-	getX		: 	out integer;
-	getY		: 	out	integer;
 	getWidth	:	out	integer;
 	getHeight	:	out integer
 );
@@ -28,9 +28,9 @@ begin
 	getWidth <= width;
 	getHeight <= height;
 
-	process(setTrigger)
+	process(triggerSet)
 	begin
-		if (rising_edge(setTrigger)) then
+		if (rising_edge(triggerSet)) then
 			x <= setX;
 			y <= setY;
 			width <= setWidth;

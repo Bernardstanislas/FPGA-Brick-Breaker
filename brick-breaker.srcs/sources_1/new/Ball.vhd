@@ -1,80 +1,82 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use work.Types.all;
 
 entity Ball is
 generic (
-	ballColor  :   color := x"FF0000"
+	width 	   :   integer := 20;
+	height 	   :   integer := 20;
+	ballColor  :   std_logic_vector := x"FF0000"
 );
 port (
     framerate  :   in  std_logic;
-	setTrigger :   in  std_logic;
-    
-    setDeltaX  :   in  integer;
-    setDeltaY  :   in  integer;
+	triggerSet :   in  std_logic;
     
 	setX       :   in  integer;
 	setY 	   :   in  integer;
-	setWidth   :   in  integer;
-	setHeight  :   in  integer;
+    getX       :   out integer;
+    getY       :   out integer;
 	
+	setDeltaX  :   in  integer;
+    setDeltaY  :   in  integer;
 	getDeltaX  :   out integer;
 	getDeltaY  :   out integer;
-	
-	getX       :   out integer;
-	getY       :   out integer;
+      
 	getWidth   :   out integer;
 	getHeight  :   out integer;
 
-	getGraphics:   out matrix
+	cursorX    :   in integer;
+	cursorY    :   in integer;
+	pixelOut   :   out std_logic_vector
 );
 end Ball;
 
 architecture Behavioral of Ball is
 	component BBox is
 	port (
-		setTrigger	:	in 	std_logic;
+        triggerSet  :   in  std_logic;
 
-		setX 		: 	in 	integer;
-		setY 		: 	in 	integer;
-		setWidth	: 	in 	integer;
-		setHeight 	: 	in 	integer;
+        setX        :   in  integer;
+        setY        :   in  integer;
+        getX        :   out integer;
+        getY        :   out integer;
         
-		getX		: 	out integer;
-		getY		: 	out	integer;
-		getWidth	:	out	integer;
-		getHeight	:	out integer
+        setWidth    :   in  integer;
+        setHeight   :   in  integer;
+        getWidth    :   out integer;
+        getHeight   :   out integer
+
 	);
 	end component;
 
 	component Ellipse is
-	port (
-		width		: 	in	integer;
-		height		:	in 	integer;
-		shapeColor	:	in 	color;
-
-		graphics	:	out matrix
-	);
+	generic (
+		width      :   integer := 20;
+        height     :   integer := 20;
+        shapeColor :   std_logic_vector := x"FF0000"
+    );
+    port (
+        X          :   in  integer;
+        Y          :   in  integer;  
+        cursorX    :   in  integer;
+        cursorY    :   in  integer;
+        pixelOut   :   out std_logic_vector 
+    );
 	end component;
 	
 	signal x       :   integer;
 	signal y       :   integer;
-	signal width   :   integer;
-	signal height  :   integer;
 	signal deltaX  :   integer;
 	signal deltaY  :   integer;
 	
 begin
     getX        <=  x;
     getY        <=  y;
-    getWidth    <=  width;
-    getHeight   <=  height;
     getDeltaX   <=  deltaX;
     getDeltaY   <=  deltaY;
     
-    process(setTrigger)
+    process(triggerSet)
     begin
-        if (rising_edge(setTrigger)) then
+        if (rising_edge(triggerSet)) then
             deltaX <= setDeltaX;
             deltaY <= setDeltaY;
         end if;
@@ -88,6 +90,7 @@ begin
         end if;
     end process;
     
-	bbox_inst      :   BBox    port map(setTrigger, setX, setY, setWidth, setHeight, x, y, width, height);
-	ellipse_inst   :   Ellipse port map(width, height, ballColor, getGraphics);
+	bbox_inst      :   BBox port map(triggerSet, setX, setY, x, y, width, height, getWidth, getHeight);
+	ellipse_inst   :   Ellipse generic map(width, height, ballColor) 
+                               port map(x, y, cursorX, cursorY, pixelOut);
 end Behavioral;
