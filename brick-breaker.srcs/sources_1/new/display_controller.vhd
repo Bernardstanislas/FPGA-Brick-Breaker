@@ -131,7 +131,7 @@ architecture Behavioral of display_controller is
     signal ball_X   : integer := 500;
     signal ball_Y   : integer := 500;
     signal ball_deltaX : integer := 0;
-    signal ball_deltaY : integer := 1;
+    signal ball_deltaY : integer := 0;
     signal ball_pixelOut    : std_logic_vector (23 downto 0) := x"000000";
     
     
@@ -202,9 +202,9 @@ color_proc: process(hcounter,vcounter)
                 color <= bricks_pixelOut(I);
             end if;
         end loop;
-        --if (ball_pixelOut /= x"000000") then
-        --    color <= ball_pixelOut;
-        --end if;
+        if (ball_pixelOut /= x"000000") then
+            color <= ball_pixelOut;
+        end if;
 end process;
 
 
