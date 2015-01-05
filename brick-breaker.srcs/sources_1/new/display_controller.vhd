@@ -44,13 +44,38 @@ architecture Behavioral of display_controller is
         setY        : in    integer;
         cursorX     : in    integer;
         cursorY     : in    integer;
-    
+        setAlive    : in    std_logic;
+        getAlive    : out   std_logic;
         getX        : out   integer;
         getY        : out   integer;
         getWidth    : out   integer;
         getHeight   : out   integer;
     
         pixelOut    : out   std_logic_vector (23 downto 0)
+    );
+    end component;
+    
+    component Ball
+    port (
+        framerate  :   in  std_logic;
+        triggerSet :   in  std_logic;
+        
+        setX       :   in  integer;
+        setY       :   in  integer;
+        getX       :   out integer;
+        getY       :   out integer;
+        
+        setDeltaX  :   in  integer;
+        setDeltaY  :   in  integer;
+        getDeltaX  :   out integer;
+        getDeltaY  :   out integer;
+          
+        getWidth   :   out integer;
+        getHeight  :   out integer;
+    
+        cursorX    :   in integer;
+        cursorY    :   in integer;
+        pixelOut   :   out std_logic_vector
     );
     end component;
 
@@ -88,6 +113,8 @@ architecture Behavioral of display_controller is
     constant C_BLUE       : std_logic_vector(23 downto 0) := x"0000FF";
     constant C_WHITE      : std_logic_vector(23 downto 0) := x"FFFFFF";
     
+    signal setAlive : std_logic := '1';
+    
     --------------------
     -- Bricks signals --
     --------------------
@@ -97,6 +124,18 @@ architecture Behavioral of display_controller is
     signal bricks_X         : bricks_coordinates := (others => 100);
     signal bricks_Y         : bricks_coordinates := (others => 100);
     signal bricks_pixelOut  : bricks_colors := (others => x"000000");
+    
+    --------------------
+    -- Ball's signals --
+    --------------------
+    signal ball_X   : integer := 500;
+    signal ball_Y   : integer := 500;
+    signal ball_deltaX : integer := 0;
+    signal ball_deltaY : integer := 1;
+    signal ball_pixelOut    : std_logic_vector (23 downto 0) := x"000000";
+    
+    
+    
 begin
     --------------------------
     -- Init bricks' signals --
@@ -108,15 +147,33 @@ begin
         end loop;
     end process;
     
+    ---------------------
+    -- Generate bricks --
+    ---------------------
     generated_bricks : for I in 0 to 9 generate
         brickx : Brick port map (triggerSet    => triggerSet,
                                   setX          => bricks_X(I),
                                   setY          => bricks_Y(I),
+                                  setAlive      => setAlive,
                                   cursorX       => cursorX,
                                   cursorY       => cursorY,
                                   pixelOut      => bricks_pixelOut(I)
                                   );
     end generate generated_bricks;
+    
+    -------------------
+    -- Generate ball --
+    -------------------
+    ballObject : Ball port map (framerate     => triggerSet,
+                              triggerSet    => triggerSet,
+                              setX          => ball_X,
+                              setY          => ball_Y,
+                              setDeltaX     => ball_deltaX,
+                              setDeltaY     => ball_deltaY,
+                              cursorX       => cursorX,
+                              cursorY       => cursorY,
+                              pixelOut      => ball_pixelOut
+                              );
 
     -- Set the video mode to 1920x1080x60Hz (150MHz pixel clock needed)
     hVisible    <= ZERO + 1920;
@@ -145,6 +202,9 @@ color_proc: process(hcounter,vcounter)
                 color <= bricks_pixelOut(I);
             end if;
         end loop;
+        --if (ball_pixelOut /= x"000000") then
+        --    color <= ball_pixelOut;
+        --end if;
 end process;
 
 
