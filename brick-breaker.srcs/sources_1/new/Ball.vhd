@@ -95,7 +95,7 @@ begin
         end if;
     end process;
     
-	bbox_inst      :   BBox port map(triggerSet, setX, setY, x, y, width, height, getWidth, getHeight, '1', '1');
+	bbox_inst      :   BBox port map(triggerSet, setX, setY, x, y, width, height, getWidth, getHeight, '1');
 	ellipse_inst   :   Ellipse generic map(width, height, ballColor) 
                                port map(x, y, '1', cursorX, cursorY, pixelOut);
 end Behavioral;
