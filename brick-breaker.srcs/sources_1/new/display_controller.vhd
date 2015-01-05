@@ -120,7 +120,8 @@ architecture Behavioral of display_controller is
     --------------------
     type bricks_coordinates is array (0 to 9) of integer;
     type bricks_colors is array (0 to 9) of std_logic_vector (23 downto 0);
-    signal triggerSet       : std_logic := '1';
+    signal triggerSet       : std_logic := '0';
+    signal componentsSet : integer := 0;
     signal bricks_X         : bricks_coordinates := (others => 100);
     signal bricks_Y         : bricks_coordinates := (others => 100);
     signal bricks_pixelOut  : bricks_colors := (others => x"000000");
@@ -130,10 +131,11 @@ architecture Behavioral of display_controller is
     --------------------
     signal ball_X   : integer := 500;
     signal ball_Y   : integer := 500;
-    signal ball_deltaX : integer := 0;
+    signal ball_deltaX : integer := 10;
     signal ball_deltaY : integer := 0;
     signal ball_pixelOut    : std_logic_vector (23 downto 0) := x"000000";
-    
+
+    signal framerate : std_logic := '0';
     
     
 begin
@@ -164,7 +166,7 @@ begin
     -------------------
     -- Generate ball --
     -------------------
-    ballObject : Ball port map (framerate     => triggerSet,
+    ballObject : Ball port map (framerate     => framerate,
                               triggerSet    => triggerSet,
                               setX          => ball_X,
                               setY          => ball_Y,
@@ -215,6 +217,7 @@ end process;
 -- outputs the pixel color.         --
 --------------------------------------
 clk_process: process (clk)
+    variable framerateCounter : integer := 0;
    begin
       if rising_edge(clk) then 
          if vcounter >= vVisible or hcounter >= hVisible then 
@@ -254,7 +257,20 @@ clk_process: process (clk)
          else
             hCounter <= hCounter + 1;
          end if;
-      end if;
+         framerateCounter := framerateCounter + 1;
+         if framerateCounter = 100000000 then
+            framerateCounter := 0;
+            framerate <= '1';
+         else
+            framerate <= '0';
+         end if;
+         if componentsSet = 0 then
+            triggerSet <= '1';
+            componentsSet <= 1;
+        else
+        triggerSet <= '0';
+         end if;
+     end if;
 end process;
 
 end Behavioral;

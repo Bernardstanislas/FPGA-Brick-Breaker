@@ -1,5 +1,6 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
 
 entity Ball is
 generic (
@@ -68,34 +69,52 @@ architecture Behavioral of Ball is
     );
 	end component;
 	
-	signal x       :   integer;
-	signal y       :   integer;
+	signal X       :   integer;
+	signal Y       :   integer;
+	signal iX       :   integer;
+    signal iY       :   integer;
+    signal iTriggerSet : std_logic := '0';
+    signal iSetX : integer;
+    signal iSetY : integer;
 	signal deltaX  :   integer;
 	signal deltaY  :   integer;
 	
 begin
-    getX        <=  x;
-    getY        <=  y;
+    getX        <=  X;
+    getY        <=  Y;
     getDeltaX   <=  deltaX;
     getDeltaY   <=  deltaY;
     
-    process(triggerSet)
+    process (triggerSet, framerate)
     begin
         if (rising_edge(triggerSet)) then
             deltaX <= setDeltaX;
             deltaY <= setDeltaY;
+            iSetX <= setX;
+            iSetY <= setY;
+            iTriggerSet <= '1';
+            X <= iX;
+            Y <= iY;
+        elsif (rising_edge(framerate)) then
+            X <= iX + deltaX;
+            iSetX <= iX + deltaX;
+            Y <= iY + deltaY;
+            iSetY <= iY + deltaY;
+            iTriggerSet <= '1';
+            deltaX <= deltaX;
+            deltaY <= deltaY;
+        else
+            iTriggerSet <= '0';
+            iSetX <= iSetX;
+            iSetY <= iSetY;
+            deltaX <= deltaX;
+            deltaY <= deltaY;
+            X <= iX;
+            Y <= iY;
         end if;
     end process;
     
-    process(framerate)
-    begin
-        if (rising_edge(framerate)) then
-            x <= x + deltaX;
-            y <= y + deltaY;
-        end if;
-    end process;
-    
-	bbox_inst      :   BBox port map(triggerSet, setX, setY, x, y, width, height, getWidth, getHeight, '1');
+	bbox_inst      :   BBox port map(iTriggerSet, iSetX, iSetY, iX, iY, width, height, getWidth, getHeight, '1');
 	ellipse_inst   :   Ellipse generic map(width, height, ballColor) 
-                               port map(x, y, '1', cursorX, cursorY, pixelOut);
+                               port map(X, Y, '1', cursorX, cursorY, pixelOut);
 end Behavioral;
