@@ -11,17 +11,17 @@ architecture Behavioral of ClockSlower is
 begin
     Hout <= Hout_internal;
     process(Hin, Hout_internal)
-        variable ratio : integer := 10000000;
+        variable ratio : integer := 2500000;
         variable count : integer := 0;
     begin
         if(rising_edge(Hin)) then
-            if(count <= ratio/2) then
+            if(count = 0) then
                 Hout_internal <= '1';
-                count := count + 1;
-            elsif(count < ratio) then
-                Hout_internal <= '0';
-                count := count + 1;
             else
+                Hout_internal <= '0';
+            end if;
+            count := count + 1;
+            if (count = ratio) then
                 count := 0;
             end if;
         end if;

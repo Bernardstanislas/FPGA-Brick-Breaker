@@ -10,7 +10,8 @@ generic (
 );
 port (
     framerate  :   in  std_logic;
-	triggerSet :   in  std_logic;
+	triggerSetPos :   in  std_logic;
+	triggerSetDelta :   in  std_logic;
     
 	setX       :   in  integer;
 	setY 	   :   in  integer;
@@ -85,17 +86,25 @@ begin
     getDeltaX   <=  deltaX;
     getDeltaY   <=  deltaY;
     
-    process (triggerSet, framerate)
+    process (triggerSetDelta, triggerSetPos, framerate)
     begin
-        if (rising_edge(triggerSet)) then
-            deltaX <= setDeltaX;
-            deltaY <= setDeltaY;
+        if (triggerSetPos = '1') then
+            deltaX <= deltaX;
+            deltaY <= deltaY;
             iSetX <= setX;
             iSetY <= setY;
             iTriggerSet <= '1';
             X <= iX;
             Y <= iY;
-        elsif (rising_edge(framerate)) then
+        elsif (triggerSetDelta = '1') then
+            X <= iX;
+            iSetX <= iSetX;
+            Y <= iY;
+            iSetY <= iSetY;
+            iTriggerSet <= '0';
+            deltaX <= setDeltaX;
+            deltaY <= setDeltaY;
+        elsif (framerate = '1') then
             X <= iX + deltaX;
             iSetX <= iX + deltaX;
             Y <= iY + deltaY;

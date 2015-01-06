@@ -33,7 +33,10 @@ entity display_controller is
            b     : out  STD_LOGIC_VECTOR (7 downto 0);
            de    : out  STD_LOGIC;
            vsync : out  STD_LOGIC := '0';
-           hsync : out  STD_LOGIC := '0');
+           hsync : out  STD_LOGIC := '0';
+           
+           debugFR : out STD_LOGIC
+           );
 end display_controller;
 
 architecture Behavioral of display_controller is
@@ -65,7 +68,8 @@ architecture Behavioral of display_controller is
     component Ball
     port (
         framerate  :   in  std_logic;
-        triggerSet :   in  std_logic;
+        triggerSetPos :   in  std_logic;
+        triggerSetDelta :   in  std_logic;
         
         setX       :   in  integer;
         setY       :   in  integer;
@@ -127,7 +131,7 @@ architecture Behavioral of display_controller is
     --------------------
     type bricks_coordinates is array (0 to 9) of integer;
     type bricks_colors is array (0 to 9) of std_logic_vector (23 downto 0);
-    signal triggerSet       : std_logic := '0';
+    signal bricks_triggerSet       : std_logic := '0';
     signal componentsSet : integer := 0;
     signal bricks_X         : bricks_coordinates := (others => 100);
     signal bricks_Y         : bricks_coordinates := (others => 100);
@@ -138,14 +142,21 @@ architecture Behavioral of display_controller is
     --------------------
     signal ball_X   : integer := 500;
     signal ball_Y   : integer := 500;
-    signal ball_deltaX : integer := 100;
-    signal ball_deltaY : integer := 100;
+    signal ball_deltaX : integer := 5;
+    signal ball_deltaY : integer := 0;
     signal ball_pixelOut    : std_logic_vector (23 downto 0) := x"000000";
-
+    signal ball_getX : integer := 500;
+    signal ball_getY : integer := 500;
+    signal ball_getWidth : integer;
+    signal ball_getHeight : integer;
+    signal ball_triggerSet_pos       : std_logic := '0';
+    signal ball_triggerSet_delta       : std_logic := '0';
     signal framerate : std_logic := '0';
     
     
 begin
+    debugFR <= framerate;
+    
     framerate_generator : ClockSlower port map (clk, framerate);
     --------------------------
     -- Init bricks' signals --
@@ -161,7 +172,7 @@ begin
     -- Generate bricks --
     ---------------------
     generated_bricks : for I in 0 to 9 generate
-        brickx : Brick port map (triggerSet    => triggerSet,
+        brickx : Brick port map (triggerSet    => bricks_triggerSet,
                                   setX          => bricks_X(I),
                                   setY          => bricks_Y(I),
                                   setAlive      => setAlive,
@@ -175,14 +186,19 @@ begin
     -- Generate ball --
     -------------------
     ballObject : Ball port map (framerate     => framerate,
-                              triggerSet    => triggerSet,
+                              triggerSetPos    => ball_triggerSet_pos,
+                              triggerSetDelta    => ball_triggerSet_delta,
                               setX          => ball_X,
                               setY          => ball_Y,
                               setDeltaX     => ball_deltaX,
                               setDeltaY     => ball_deltaY,
                               cursorX       => cursorX,
                               cursorY       => cursorY,
-                              pixelOut      => ball_pixelOut
+                              pixelOut      => ball_pixelOut,
+                              getX          => ball_getX,
+                              getY          => ball_getY,
+                              getWidth      => ball_getWidth,
+                              getHeight     => ball_getHeight
                               );
 
     -- Set the video mode to 1920x1080x60Hz (150MHz pixel clock needed)
@@ -266,11 +282,23 @@ clk_process: process (clk)
          end if;
 
          if componentsSet = 0 then
-            triggerSet <= '1';
+            ball_triggerSet_pos <= '1';
+            bricks_triggerSet <= '1';
             componentsSet <= 1;
         else
-        triggerSet <= '0';
+            bricks_triggerSet <= '0';
+            ball_triggerSet_pos <= '0';
+            if (ball_getX <= -1) then
+                 ball_deltaX <= 5;
+                 ball_triggerSet_delta <= '1';
+             elsif (ball_getX + ball_getWidth >= 1920) then
+                 ball_deltaX <= -5;
+                 ball_triggerSet_delta <= '1';
+             else
+                 ball_triggerSet_delta <= '0';
+             end if;
          end if;
+         
      end if;
 end process;
 
