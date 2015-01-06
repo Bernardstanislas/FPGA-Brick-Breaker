@@ -37,6 +37,13 @@ entity display_controller is
 end display_controller;
 
 architecture Behavioral of display_controller is
+    component ClockSlower
+    port (
+        Hin         : in    std_logic;
+        Hout        : out   std_logic
+    );
+    end component;
+
     component Brick
     port (
         triggerSet	: in    std_logic;
@@ -131,14 +138,15 @@ architecture Behavioral of display_controller is
     --------------------
     signal ball_X   : integer := 500;
     signal ball_Y   : integer := 500;
-    signal ball_deltaX : integer := 10;
-    signal ball_deltaY : integer := 0;
+    signal ball_deltaX : integer := 100;
+    signal ball_deltaY : integer := 100;
     signal ball_pixelOut    : std_logic_vector (23 downto 0) := x"000000";
 
     signal framerate : std_logic := '0';
     
     
 begin
+    framerate_generator : ClockSlower port map (clk, framerate);
     --------------------------
     -- Init bricks' signals --
     --------------------------
@@ -217,7 +225,6 @@ end process;
 -- outputs the pixel color.         --
 --------------------------------------
 clk_process: process (clk)
-    variable framerateCounter : integer := 0;
    begin
       if rising_edge(clk) then 
          if vcounter >= vVisible or hcounter >= hVisible then 
@@ -257,13 +264,7 @@ clk_process: process (clk)
          else
             hCounter <= hCounter + 1;
          end if;
-         framerateCounter := framerateCounter + 1;
-         if framerateCounter = 100000000 then
-            framerateCounter := 0;
-            framerate <= '1';
-         else
-            framerate <= '0';
-         end if;
+
          if componentsSet = 0 then
             triggerSet <= '1';
             componentsSet <= 1;
