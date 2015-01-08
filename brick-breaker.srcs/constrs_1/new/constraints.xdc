@@ -82,6 +82,3 @@ set_property PACKAGE_PIN V18 [get_ports {vga_r[3]}]
 set_property PACKAGE_PIN V19 [get_ports {vga_r[2]}]
 set_property PACKAGE_PIN U20 [get_ports {vga_r[1]}]
 set_property PACKAGE_PIN V20 [get_ports {vga_r[0]}]
-
-set_property IOSTANDARD LVCMOS33 [get_ports {debugFR}]
-set_property PACKAGE_PIN Y11 [get_ports {debugFR}]

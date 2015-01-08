@@ -46,9 +46,7 @@ entity hdmi_display is
            hdmi_d        : out  STD_LOGIC_VECTOR (15 downto 0);
            hdmi_de       : out  STD_LOGIC;
            hdmi_scl      : out  STD_LOGIC;
-           hdmi_sda      : inout  STD_LOGIC;
-           
-           debugFR      : out STD_LOGIC
+           hdmi_sda      : inout  STD_LOGIC
           );
 end hdmi_display;
 
@@ -61,8 +59,7 @@ architecture Behavioral of hdmi_display is
 		b : OUT std_logic_vector(7 downto 0);
 		de : OUT std_logic;
 		vsync : OUT std_logic;
-		hsync : OUT std_logic;
-		debugFR : OUT std_logic
+		hsync : OUT std_logic
 		);
 	END COMPONENT;
 	
@@ -191,8 +188,7 @@ i_display_controller: display_controller PORT MAP(
 		b     => pattern_b,
 		de    => pattern_de,
 		vsync => pattern_vsync,
-		hsync => pattern_hsync,
-		debugFR => debugFR
+		hsync => pattern_hsync
 	);
 
 i_converter_444_422: converter_444_422 PORT MAP(

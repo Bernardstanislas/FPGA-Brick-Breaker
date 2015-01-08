@@ -1,5 +1,6 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
 
 entity Ellipse is
 port (
@@ -21,6 +22,6 @@ architecture Behavioral of Ellipse is
 begin
     --pixelOut <= shapeColor when ( ((cursorX-(X+width / 2))**2) * (height**2) + ((cursorY-(Y+height / 2))**2)*(width**2) <= (width**2)* (height**2) ) and alive = '1'
     --            else x"000000";
-    pixelOut <= shapeColor when (cursorX >= X and cursorX <= X + 2*radius and cursorY >= Y and cursorY <= Y + 2*radius) and alive = '1'
+    pixelOut <= shapeColor when (cursorX >= X - radius and cursorX <= X + radius and cursorY >= Y - radius and cursorY <= Y + radius) and alive = '1'
                     else x"000000"; 
 end Behavioral;

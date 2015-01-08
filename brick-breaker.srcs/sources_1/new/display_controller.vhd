@@ -115,18 +115,22 @@ architecture Behavioral of display_controller is
     --------------------
     type bricks_coordinates is array (0 to 9) of integer;
     type bricks_colors is array (0 to 9) of std_logic_vector (23 downto 0);
-
+   
     signal bricks_triggerSet : std_logic := '1';
-    signal bricks_x          : bricks_coordinates := (others => 100);
-    signal bricks_y          : bricks_coordinates := (others => 100);
-    signal bricks_alive      : array (0 to 9) of std_logic;
-    signal bricks_pixelOut   : bricks_colors := (others => x"000000");
+    signal bricks_setX       : bricks_coordinates := (others => 100);
+    signal bricks_setY       : bricks_coordinates := (others => 100);
+    signal bricks_x          : bricks_coordinates;
+    signal bricks_y          : bricks_coordinates;
+    signal bricks_width      : bricks_coordinates;
+    signal bricks_height     : bricks_coordinates;
+    signal bricks_alive      : std_logic_vector (0 to 9);
+    signal bricks_pixelOut   : bricks_colors;
     
     --------------------
     -- Ball signals --
     --------------------
-    signal ball_triggerSetPos   : std_logic := '0';
-    signal ball_triggerSetDelta : std_logic := '0';
+    signal ball_triggerSetPos    : std_logic := '0';
+    signal ball_triggerSetDelta  : std_logic := '0';
     signal ball_setX             : integer := 960;
     signal ball_setY             : integer := 500;
     signal ball_setDeltaX        : integer := 5;
@@ -137,7 +141,7 @@ architecture Behavioral of display_controller is
     signal ball_y                : integer;
     signal ball_width            : integer;
     signal ball_height           : integer;
-    signal ball_pixelOut         : std_logic_vector (23 downto 0) := x"000000";    
+    signal ball_pixelOut         : std_logic_vector (23 downto 0);    
     
 begin    
     framerate_generator : ClockSlower port map (clk, framerate);
@@ -147,7 +151,7 @@ begin
     process
     begin
         for I in 0 to 9 loop
-            bricks_x(I) <= 100 + 60*I;
+            bricks_setX(I) <= 100 + 60*I;
         end loop;
     end process;
     
@@ -155,7 +159,7 @@ begin
     -- Generate bricks --
     ---------------------
     generated_bricks : for I in 0 to 9 generate
-        brickx : Brick port map (clk, bricks_triggerSet, bricks_x(I), bricks_y(I), setAlive, bricks_alive(I), cursorX, cursorY, bricks_pixelOut(I));
+        brickX : Brick port map (clk, bricks_triggerSet, bricks_setX(I), bricks_setY(I), bricks_x(I), bricks_y(I), setAlive, bricks_alive(I), bricks_width(I), bricks_height(I), cursorX, cursorY, bricks_pixelOut(I));
     end generate generated_bricks;
     
     -------------------
@@ -243,22 +247,23 @@ clk_process: process (clk)
             hCounter <= hCounter + 1;
          end if;
 
+         -- Screen content update
          if init = '0' then
-            init = '1';
-        else
+            init <= '1';
+         else
             bricks_triggerSet <= '0';
             ball_triggerSetPos <= '0';
             if (ball_x <= 0) then
-                 ball_deltaX <= 5;
-                 ball_triggerSetDelta <= '1';
-             elsif (ball_x + ball_width >= 1920) then
-                 ball_deltaX <= -5;
-                 ball_triggerSetDelta <= '1';
-             else
-                 ball_triggerSetDelta <= '0';
-             end if;
-         end if;
-         
+                ball_deltaX <= 5;
+                ball_triggerSetDelta <= '1';
+            elsif (ball_x + ball_width >= 1920) then
+                ball_deltaX <= -5;
+                ball_triggerSetDelta <= '1';
+            else
+                ball_triggerSetDelta <= '0';
+            end if;
+        end if;
+        ---------------------------
      end if;
 end process;
 

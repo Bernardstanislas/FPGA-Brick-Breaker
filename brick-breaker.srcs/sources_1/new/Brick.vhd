@@ -51,9 +51,9 @@ architecture Behavioral of Brick is
 
 	component Rectangle is
 	port (
-        width      :   integer;
-        height     :   integer;
-        shapeColor :   std_logic_vector;
+        width      :   in integer;
+        height     :   in integer;
+        shapeColor :   in std_logic_vector;
 
         X          :   in  integer;
         Y          :   in  integer;  

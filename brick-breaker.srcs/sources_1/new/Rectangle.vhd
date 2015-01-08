@@ -1,11 +1,12 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
 
 entity Rectangle is
 port (
-	width      :   integer := 50;
-	height	   :   integer := 20;
-	shapeColor :   std_logic_vector := x"777777"
+	width      :   in integer;
+	height	   :   in integer;
+	shapeColor :   in std_logic_vector;
 
     X          :   in  integer;
     Y          :   in  integer;  

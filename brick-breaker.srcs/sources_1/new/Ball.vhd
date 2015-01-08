@@ -55,8 +55,8 @@ architecture Behavioral of Ball is
 
 	component Ellipse is
 	port (
-		radius     :   integer := 10;
-        shapeColor :   std_logic_vector := x"FF0000";
+		radius     :   in integer;
+        shapeColor :   in std_logic_vector;
 
         X          :   in  integer;
         Y          :   in  integer;  
@@ -77,7 +77,7 @@ architecture Behavioral of Ball is
     -- We're using a bunch of intermediate signals for the position because we can also set the position internally (the ball moves by itself)
 	signal iX             :   integer; -- Represents the set position, before being moved
     signal iY             :   integer;
-    signal iTriggerSetPos :   std_logic := '0'; -- Equals 1 with external triggerSetPos = 1 or just after an internal movement
+    signal iTriggerSetPos :   std_logic; -- Equals 1 with external triggerSetPos = 1 or just after an internal movement
     signal iSetX          :   integer; -- Represents the position to set, either set externally or by the framerate process
     signal iSetY          :   integer;
 	
@@ -121,26 +121,26 @@ begin
 
         -- Then, we move the ball if we're at a frame time
         elsif (framerate = '1') then
-            iTriggerSetPos <= '1';
-            iSetX <= iX + deltaX; -- Override
-            iSetY <= iY + deltaY; -- Override
-            deltaX <= deltaX;
-            deltaY <= deltaY;
-            X <= iX + deltaX; -- Override
-            Y <= iY + deltaY; -- Override
+           iTriggerSetPos <= '1';
+           iSetX <= iX + deltaX; -- Override
+           iSetY <= iY + deltaY; -- Override
+           deltaX <= deltaX;
+           deltaY <= deltaY;
+           X <= iX + deltaX; -- Override
+           Y <= iY + deltaY; -- Override
         
         -- And when nothing happens, we keep everything like it was, and we put the trigger back to 0    
         else
-            iTriggerSet <= '0';
-            iSetX <= iSetX;
-            iSetY <= iSetY;
-            deltaX <= deltaX;
-            deltaY <= deltaY;
-            X <= iX;
-            Y <= iY;
+           iTriggerSetPos <= '0';
+           iSetX <= iSetX;
+           iSetY <= iSetY;
+           deltaX <= deltaX;
+           deltaY <= deltaY;
+           X <= iX;
+           Y <= iY;
         end if;
     end process;
     
-	bbox_inst      :   BBox port map(clock, iTriggerSetPos, iSetX, iSetY, iX, iY, 2*radius, 2*radius, getWidth, getHeight, '1');
+	bbox_inst      :   BBox port map(clock, iTriggerSetPos, iSetX, iSetY, iX, iY, radius, radius, getWidth, getHeight, '1');
 	ellipse_inst   :   Ellipse port map(radius, ballColor, X, Y, '1', cursorX, cursorY, pixelOut);
 end Behavioral;
