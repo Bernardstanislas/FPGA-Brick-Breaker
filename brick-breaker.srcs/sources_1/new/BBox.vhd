@@ -3,6 +3,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity BBox is
 port (
+	clock		:	in  std_logic;
     triggerSet  :   in  std_logic;
 
     setX        :   in  integer;
@@ -15,8 +16,8 @@ port (
 	getWidth	:	out	integer;
 	getHeight	:	out integer;
 	
-	setAlive   :   in  std_logic;
-	getAlive   :   out std_logic
+	setAlive    :   in  std_logic;
+	getAlive    :   out std_logic
 );
 end BBox;
 
@@ -25,7 +26,8 @@ architecture Behavioral of BBox is
 	signal y 	 	: integer;
 	signal width 	: integer;
 	signal height 	: integer;
-	signal alive   : std_logic;
+	signal alive    : std_logic;
+	
 begin
 	getX <= x;
 	getY <= y;
@@ -33,14 +35,20 @@ begin
 	getHeight <= height;
 	getAlive <= alive;
 
-	process(triggerSet)
+	process(clock)
 	begin
-		if (rising_edge(triggerSet)) then
+		if (triggerSet = '1') then
 			x <= setX;
 			y <= setY;
 			width <= setWidth;
 			height <= setHeight;
 			alive <= setAlive;
+		else
+			x <= x;
+			y <= y;
+			width <= width;
+			height <= height;
+			alive <= alive;
 		end if;
 	end process;
 end Behavioral;

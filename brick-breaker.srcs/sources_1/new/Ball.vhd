@@ -4,14 +4,14 @@ use IEEE.STD_LOGIC_ARITH.ALL;
 
 entity Ball is
 generic (
-	width 	   :   integer := 20;
-	height 	   :   integer := 20;
-	ballColor  :   std_logic_vector := x"FF0000"
+    radius      :   integer            :=  10;
+	ballColor   :   std_logic_vector   :=  x"FF0000"
 );
 port (
-    framerate  :   in  std_logic;
-	triggerSetPos :   in  std_logic;
-	triggerSetDelta :   in  std_logic;
+    clock           : in  std_logic;
+    framerate       : in  std_logic;
+	triggerSetPos   : in  std_logic;
+	triggerSetDelta : in  std_logic;
     
 	setX       :   in  integer;
 	setY 	   :   in  integer;
@@ -35,6 +35,7 @@ end Ball;
 architecture Behavioral of Ball is
 	component BBox is
 	port (
+        clock       :   in  std_logic;
         triggerSet  :   in  std_logic;
 
         setX        :   in  integer;
@@ -53,16 +54,14 @@ architecture Behavioral of Ball is
 	end component;
 
 	component Ellipse is
-	generic (
-		width      :   integer := 20;
-        height     :   integer := 20;
-        shapeColor :   std_logic_vector := x"FF0000"
-    );
-    port (
+	port (
+		radius     :   integer := 10;
+        shapeColor :   std_logic_vector := x"FF0000";
+
         X          :   in  integer;
         Y          :   in  integer;  
         
-        alive       :   in std_logic;
+        alive      :   in  std_logic;
         
         cursorX    :   in  integer;
         cursorY    :   in  integer;
@@ -70,15 +69,17 @@ architecture Behavioral of Ball is
     );
 	end component;
 	
-	signal X       :   integer;
-	signal Y       :   integer;
-	signal iX       :   integer;
-    signal iY       :   integer;
-    signal iTriggerSet : std_logic := '0';
-    signal iSetX : integer;
-    signal iSetY : integer;
-	signal deltaX  :   integer;
-	signal deltaY  :   integer;
+	signal X              :   integer;
+	signal Y              :   integer;
+    signal deltaX         :   integer;
+    signal deltaY         :   integer;
+
+    -- We're using a bunch of intermediate signals for the position because we can also set the position internally (the ball moves by itself)
+	signal iX             :   integer; -- Represents the set position, before being moved
+    signal iY             :   integer;
+    signal iTriggerSetPos :   std_logic := '0'; -- Equals 1 with external triggerSetPos = 1 or just after an internal movement
+    signal iSetX          :   integer; -- Represents the position to set, either set externally or by the framerate process
+    signal iSetY          :   integer;
 	
 begin
     getX        <=  X;
@@ -86,32 +87,49 @@ begin
     getDeltaX   <=  deltaX;
     getDeltaY   <=  deltaY;
     
-    process (triggerSetDelta, triggerSetPos, framerate)
+    -- Main ball process
+    process (clock)
     begin
-        if (triggerSetPos = '1') then
-            deltaX <= deltaX;
-            deltaY <= deltaY;
-            iSetX <= setX;
-            iSetY <= setY;
-            iTriggerSet <= '1';
+        if (triggerSetPos = '1' and triggerSetDelta = '1') then
+            iTriggerSetPos <= '1';
+            iSetX <= setX; -- Override
+            iSetY <= setY; -- Override
+            deltaX <= setDeltaX; -- Override
+            deltaY <= setDeltaY; -- Override
             X <= iX;
             Y <= iY;
+
+        -- First of all, we check if the game asked to reset the ball
+        elsif (triggerSetPos = '1') then
+            iTriggerSetPos <= '1';
+            iSetX <= setX; -- Override
+            iSetY <= setY; -- Override
+            deltaX <= deltaX;
+            deltaY <= deltaY;
+            X <= iX;
+            Y <= iY;
+
+        -- Then, we check if the ball collided with anything
         elsif (triggerSetDelta = '1') then
-            X <= iX;
+            iTriggerSetPos <= '0';
             iSetX <= iSetX;
-            Y <= iY;
             iSetY <= iSetY;
-            iTriggerSet <= '0';
-            deltaX <= setDeltaX;
-            deltaY <= setDeltaY;
+            deltaX <= setDeltaX; -- Override
+            deltaY <= setDeltaY; -- Override
+            X <= iX;
+            Y <= iY;
+
+        -- Then, we move the ball if we're at a frame time
         elsif (framerate = '1') then
-            X <= iX + deltaX;
-            iSetX <= iX + deltaX;
-            Y <= iY + deltaY;
-            iSetY <= iY + deltaY;
-            iTriggerSet <= '1';
+            iTriggerSetPos <= '1';
+            iSetX <= iX + deltaX; -- Override
+            iSetY <= iY + deltaY; -- Override
             deltaX <= deltaX;
             deltaY <= deltaY;
+            X <= iX + deltaX; -- Override
+            Y <= iY + deltaY; -- Override
+        
+        -- And when nothing happens, we keep everything like it was, and we put the trigger back to 0    
         else
             iTriggerSet <= '0';
             iSetX <= iSetX;
@@ -123,7 +141,6 @@ begin
         end if;
     end process;
     
-	bbox_inst      :   BBox port map(iTriggerSet, iSetX, iSetY, iX, iY, width, height, getWidth, getHeight, '1');
-	ellipse_inst   :   Ellipse generic map(width, height, ballColor) 
-                               port map(X, Y, '1', cursorX, cursorY, pixelOut);
+	bbox_inst      :   BBox port map(clock, iTriggerSetPos, iSetX, iSetY, iX, iY, 2*radius, 2*radius, getWidth, getHeight, '1');
+	ellipse_inst   :   Ellipse port map(radius, ballColor, X, Y, '1', cursorX, cursorY, pixelOut);
 end Behavioral;

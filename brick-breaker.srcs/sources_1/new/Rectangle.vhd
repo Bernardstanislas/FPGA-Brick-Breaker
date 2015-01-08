@@ -2,12 +2,11 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
 entity Rectangle is
-generic (
+port (
 	width      :   integer := 50;
 	height	   :   integer := 20;
 	shapeColor :   std_logic_vector := x"777777"
-);
-port (
+
     X          :   in  integer;
     Y          :   in  integer;  
     

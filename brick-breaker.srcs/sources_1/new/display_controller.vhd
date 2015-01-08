@@ -1,24 +1,3 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 15.12.2014 10:59:22
--- Design Name: 
--- Module Name: display_controller - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
-
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
@@ -33,9 +12,7 @@ entity display_controller is
            b     : out  STD_LOGIC_VECTOR (7 downto 0);
            de    : out  STD_LOGIC;
            vsync : out  STD_LOGIC := '0';
-           hsync : out  STD_LOGIC := '0';
-           
-           debugFR : out STD_LOGIC
+           hsync : out  STD_LOGIC := '0'
            );
 end display_controller;
 
@@ -49,44 +26,49 @@ architecture Behavioral of display_controller is
 
     component Brick
     port (
+        clock       : in    std_logic;
         triggerSet	: in    std_logic;
+
         setX        : in    integer;
         setY        : in    integer;
-        cursorX     : in    integer;
-        cursorY     : in    integer;
-        setAlive    : in    std_logic;
-        getAlive    : out   std_logic;
         getX        : out   integer;
         getY        : out   integer;
+
+        setAlive    : in    std_logic;
+        getAlive    : out   std_logic;
+
         getWidth    : out   integer;
         getHeight   : out   integer;
-    
-        pixelOut    : out   std_logic_vector (23 downto 0)
+      
+        cursorX     : in    integer;
+        cursorY     : in    integer;
+        pixelOut    : out   std_logic_vector
     );
     end component;
     
     component Ball
     port (
-        framerate  :   in  std_logic;
-        triggerSetPos :   in  std_logic;
-        triggerSetDelta :   in  std_logic;
-        
-        setX       :   in  integer;
-        setY       :   in  integer;
-        getX       :   out integer;
-        getY       :   out integer;
-        
-        setDeltaX  :   in  integer;
-        setDeltaY  :   in  integer;
-        getDeltaX  :   out integer;
-        getDeltaY  :   out integer;
-          
-        getWidth   :   out integer;
-        getHeight  :   out integer;
+        clock           : in  std_logic;
+        framerate       : in  std_logic;
+        triggerSetPos   : in  std_logic;
+        triggerSetDelta : in  std_logic;
     
-        cursorX    :   in integer;
-        cursorY    :   in integer;
-        pixelOut   :   out std_logic_vector
+        setX            : in  integer;
+        setY            : in  integer;
+        getX            : out integer;
+        getY            : out integer;
+  
+        setDeltaX       : in  integer;
+        setDeltaY       : in  integer;
+        getDeltaX       : out integer;
+        getDeltaY       : out integer;
+      
+        getWidth        : out integer;
+        getHeight       : out integer;
+
+        cursorX         : in integer;
+        cursorY         : in integer;
+        pixelOut        : out std_logic_vector
     );
     end component;
 
@@ -94,7 +76,7 @@ architecture Behavioral of display_controller is
     -----------------------------
     -- HDMI management signals --
     -----------------------------
-    signal color         : STD_LOGIC_VECTOR (23 downto 0);
+    signal   color       : std_logic_vector (23 downto 0);
     
     signal   hcounter    : unsigned(11 downto 0) := (others => '0');
     signal   vcounter    : unsigned(11 downto 0) := (others => '0');
@@ -124,39 +106,40 @@ architecture Behavioral of display_controller is
     constant C_BLUE       : std_logic_vector(23 downto 0) := x"0000FF";
     constant C_WHITE      : std_logic_vector(23 downto 0) := x"FFFFFF";
     
-    signal setAlive : std_logic := '1';
-    
+    signal setAlive       : std_logic := '1';
+    signal framerate      : std_logic;
+    signal init           : std_logic := '0';
+
     --------------------
     -- Bricks signals --
     --------------------
     type bricks_coordinates is array (0 to 9) of integer;
     type bricks_colors is array (0 to 9) of std_logic_vector (23 downto 0);
-    signal bricks_triggerSet       : std_logic := '0';
-    signal componentsSet : integer := 0;
-    signal bricks_X         : bricks_coordinates := (others => 100);
-    signal bricks_Y         : bricks_coordinates := (others => 100);
-    signal bricks_pixelOut  : bricks_colors := (others => x"000000");
+
+    signal bricks_triggerSet : std_logic := '1';
+    signal bricks_x          : bricks_coordinates := (others => 100);
+    signal bricks_y          : bricks_coordinates := (others => 100);
+    signal bricks_alive      : array (0 to 9) of std_logic;
+    signal bricks_pixelOut   : bricks_colors := (others => x"000000");
     
     --------------------
-    -- Ball's signals --
+    -- Ball signals --
     --------------------
-    signal ball_X   : integer := 500;
-    signal ball_Y   : integer := 500;
-    signal ball_deltaX : integer := 5;
-    signal ball_deltaY : integer := 0;
-    signal ball_pixelOut    : std_logic_vector (23 downto 0) := x"000000";
-    signal ball_getX : integer := 500;
-    signal ball_getY : integer := 500;
-    signal ball_getWidth : integer;
-    signal ball_getHeight : integer;
-    signal ball_triggerSet_pos       : std_logic := '0';
-    signal ball_triggerSet_delta       : std_logic := '0';
-    signal framerate : std_logic := '0';
+    signal ball_triggerSetPos   : std_logic := '0';
+    signal ball_triggerSetDelta : std_logic := '0';
+    signal ball_setX             : integer := 960;
+    signal ball_setY             : integer := 500;
+    signal ball_setDeltaX        : integer := 5;
+    signal ball_setDeltaY        : integer := 0;
+    signal ball_deltaX           : integer;
+    signal ball_deltaY           : integer;
+    signal ball_x                : integer;
+    signal ball_y                : integer;
+    signal ball_width            : integer;
+    signal ball_height           : integer;
+    signal ball_pixelOut         : std_logic_vector (23 downto 0) := x"000000";    
     
-    
-begin
-    debugFR <= framerate;
-    
+begin    
     framerate_generator : ClockSlower port map (clk, framerate);
     --------------------------
     -- Init bricks' signals --
@@ -164,7 +147,7 @@ begin
     process
     begin
         for I in 0 to 9 loop
-            bricks_X(I) <= 100 + 60*I;
+            bricks_x(I) <= 100 + 60*I;
         end loop;
     end process;
     
@@ -172,34 +155,13 @@ begin
     -- Generate bricks --
     ---------------------
     generated_bricks : for I in 0 to 9 generate
-        brickx : Brick port map (triggerSet    => bricks_triggerSet,
-                                  setX          => bricks_X(I),
-                                  setY          => bricks_Y(I),
-                                  setAlive      => setAlive,
-                                  cursorX       => cursorX,
-                                  cursorY       => cursorY,
-                                  pixelOut      => bricks_pixelOut(I)
-                                  );
+        brickx : Brick port map (clk, bricks_triggerSet, bricks_x(I), bricks_y(I), setAlive, bricks_alive(I), cursorX, cursorY, bricks_pixelOut(I));
     end generate generated_bricks;
     
     -------------------
     -- Generate ball --
     -------------------
-    ballObject : Ball port map (framerate     => framerate,
-                              triggerSetPos    => ball_triggerSet_pos,
-                              triggerSetDelta    => ball_triggerSet_delta,
-                              setX          => ball_X,
-                              setY          => ball_Y,
-                              setDeltaX     => ball_deltaX,
-                              setDeltaY     => ball_deltaY,
-                              cursorX       => cursorX,
-                              cursorY       => cursorY,
-                              pixelOut      => ball_pixelOut,
-                              getX          => ball_getX,
-                              getY          => ball_getY,
-                              getWidth      => ball_getWidth,
-                              getHeight     => ball_getHeight
-                              );
+    ballObject : Ball port map (clk, framerate, ball_triggerSetPos, ball_triggerSetDelta, ball_setX, ball_setY, ball_x, ball_y, ball_setDeltaX, ball_setDeltaY, ball_deltaX, ball_deltaY, ball_width, ball_height, cursorX, cursorY, ball_pixelOut);
 
     -- Set the video mode to 1920x1080x60Hz (150MHz pixel clock needed)
     hVisible    <= ZERO + 1920;
@@ -281,21 +243,19 @@ clk_process: process (clk)
             hCounter <= hCounter + 1;
          end if;
 
-         if componentsSet = 0 then
-            ball_triggerSet_pos <= '1';
-            bricks_triggerSet <= '1';
-            componentsSet <= 1;
+         if init = '0' then
+            init = '1';
         else
             bricks_triggerSet <= '0';
-            ball_triggerSet_pos <= '0';
-            if (ball_getX <= -1) then
+            ball_triggerSetPos <= '0';
+            if (ball_x <= 0) then
                  ball_deltaX <= 5;
-                 ball_triggerSet_delta <= '1';
-             elsif (ball_getX + ball_getWidth >= 1920) then
+                 ball_triggerSetDelta <= '1';
+             elsif (ball_x + ball_width >= 1920) then
                  ball_deltaX <= -5;
-                 ball_triggerSet_delta <= '1';
+                 ball_triggerSetDelta <= '1';
              else
-                 ball_triggerSet_delta <= '0';
+                 ball_triggerSetDelta <= '0';
              end if;
          end if;
          
