@@ -107,8 +107,8 @@ architecture Behavioral of display_controller is
     --------------------
     signal ball_x       : integer range 0 to 1900 := 960;
     signal ball_y       : integer range 0 to 1060 := 500;
-    signal ball_deltaX  : integer range -10 to 10 := 5;
-    signal ball_deltaY  : integer range -10 to 10 := 2;
+    signal ball_deltaX  : integer range -10 to 10 := 10;
+    signal ball_deltaY  : integer range -10 to 10 := 10;
     signal ball_width   : integer;
     signal ball_height  : integer;
     signal ball_pixelOut: std_logic_vector (23 downto 0);    
@@ -176,65 +176,91 @@ end process;
 -- outputs the pixel color.         --
 --------------------------------------
 clk_process: process (clk)
-variable xSpeed : integer := 5;
-variable ySpeed : integer := 2;
-   begin
-      if rising_edge(clk) then 
-         if vcounter >= vVisible or hcounter >= hVisible then 
-            r <= (others => '0');
-            g <= (others => '0');
-            b <= (others => '0');
-            de <= '0';
-         else
-            R  <= color(23 downto 16);
-            G  <= color(15 downto  8);
-            B  <= color( 7 downto  0);
-            de <= '1';
-         end if;
-              
-         -- Generate the sync Pulses
-         if vcounter = vStartSync then 
-            vSync <= vSyncActive;
-         elsif vCounter = vEndSync then
-            vSync <= not(vSyncActive);
-         end if;
-
-         if hcounter = hStartSync then 
-            hSync <= hSyncActive;
-         elsif hCounter = hEndSync then
-            hSync <= not(hSyncActive);
-         end if;
-
-            -- Advance the position counters
-         if hCounter = hMax  then
-            -- starting a new line
-            hCounter <= (others => '0');
-            if vCounter = vMax then
-               vCounter <= (others => '0');
-            else
-               vCounter <= vCounter + 1;
-            end if;
-         else
-            hCounter <= hCounter + 1;
-         end if;
-         if framerate = '1' then
-             ball_x <= ball_x + ball_deltaX;
-             ball_y <= ball_y + ball_deltaY;
-         end if;
-         
-         if (ball_x <= 50) then
-            ball_deltaX <= xSpeed;
-            ball_x <= 51;
-         elsif (ball_x >= 1850) then
-            ball_deltaX <= -xSpeed;
-            ball_x <= 1849;
-         elsif (ball_y <= 50) then
-            ball_deltaY <= ySpeed;
-            ball_y <= 51;
-         elsif (ball_y >= 1010) then
-            ball_deltaY <= -ySpeed;
-            ball_y <= 1009;
-         end if;
+variable xSpeed : integer := 10;
+variable ySpeed : integer := 10;
+begin
+  if rising_edge(clk) then 
+     if vcounter >= vVisible or hcounter >= hVisible then 
+        r <= (others => '0');
+        g <= (others => '0');
+        b <= (others => '0');
+        de <= '0';
+     else
+        R  <= color(23 downto 16);
+        G  <= color(15 downto  8);
+        B  <= color( 7 downto  0);
+        de <= '1';
      end if;
+          
+     -- Generate the sync Pulses
+     if vcounter = vStartSync then 
+        vSync <= vSyncActive;
+     elsif vCounter = vEndSync then
+        vSync <= not(vSyncActive);
+     end if;
+
+     if hcounter = hStartSync then 
+        hSync <= hSyncActive;
+     elsif hCounter = hEndSync then
+        hSync <= not(hSyncActive);
+     end if;
+
+        -- Advance the position counters
+     if hCounter = hMax  then
+        -- starting a new line
+        hCounter <= (others => '0');
+        if vCounter = vMax then
+           vCounter <= (others => '0');
+        else
+           vCounter <= vCounter + 1;
+        end if;
+     else
+        hCounter <= hCounter + 1;
+     end if;
+     if framerate = '1' then
+         ball_x <= ball_x + ball_deltaX;
+         ball_y <= ball_y + ball_deltaY;
+     end if;
+     
+     -- Collisions with screen limits
+     if (ball_x <= 50) then
+        ball_deltaX <= xSpeed;
+        ball_x <= 51;
+     elsif (ball_x >= 1850) then
+        ball_deltaX <= -xSpeed;
+        ball_x <= 1849;
+     elsif (ball_y <= 50) then
+        ball_deltaY <= ySpeed;
+        ball_y <= 51;
+     elsif (ball_y >= 1010) then
+        ball_deltaY <= -ySpeed;
+        ball_y <= 1009;
+     end if;   
+     
+     -- Collisions with bricks
+     for i in 0 to 9 loop
+        if ball_x + ball_width >= bricks_x(i) and ball_x <= bricks_x(i) + bricks_width(i) and bricks_alive(i) = '1' then -- collide vertically
+            if ball_y + ball_height >= bricks_y(i) and ball_y + ball_height <= bricks_y(i) + ySpeed then -- collide from top
+                ball_deltaY <= -ySpeed;
+                ball_y <= bricks_y(i) - ball_height - 1;
+                bricks_alive(i) <= '0';
+            elsif ball_y >= bricks_y(i) + bricks_height(i) - ySpeed and ball_y <= bricks_y(i) + bricks_height(i) then -- collide from bottom
+                ball_deltaY <= ySpeed;
+                ball_y <= bricks_y(i) + bricks_height(i) + 1;
+                bricks_alive(i) <= '0';
+            end if;
+        elsif ball_y + ball_height >= bricks_y(i) and ball_y <= bricks_y(i) + bricks_height(i) and bricks_alive(i) = '1' then -- collide horizontally
+            if ball_x + ball_width >= bricks_x(i) and ball_x + ball_width <= bricks_x(i) + xSpeed then -- collide from left
+                ball_deltaX <= -xSpeed;
+                ball_x <= bricks_x(i) - ball_width - 1;
+                bricks_alive(i) <= '0';
+            elsif ball_x >= bricks_x(i) + bricks_width(i) - xSpeed and ball_x <= bricks_x(i) + bricks_width(i) then -- collide from right
+                ball_deltaX <= xSpeed;
+                ball_x <= bricks_x(i) + bricks_width(i) + 1;
+                bricks_alive(i) <= '0';
+            end if;
+        end if;
+     end loop;
+  end if;
 end process;
- end Behavioral;
+end Behavioral;
