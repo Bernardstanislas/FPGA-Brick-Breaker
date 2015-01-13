@@ -3,7 +3,6 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity BBox is
 port (
-	clock		:	in  std_logic;
     triggerSet  :   in  std_logic;
 
     setX        :   in  integer;
@@ -44,7 +43,7 @@ begin
                 width <= setWidth;
                 height <= setHeight;
                 alive <= setAlive;
-            when '0' =>
+            when others =>
                 x <= x;
                 y <= y;
                 width <= width;

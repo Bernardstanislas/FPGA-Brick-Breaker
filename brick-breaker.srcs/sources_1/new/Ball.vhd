@@ -5,10 +5,9 @@ use IEEE.STD_LOGIC_ARITH.ALL;
 entity Ball is
 generic (
     radius      :   integer            :=  10;
-	ballColor   :   std_logic_vector   :=  x"FF0000"
+	ballColor   :   std_logic_vector   :=  x"FF00FF"
 );
 port (
-    clock           : in  std_logic;
     framerate       : in  std_logic;
 	triggerSetPos   : in  std_logic;
 	triggerSetDelta : in  std_logic;
@@ -35,7 +34,6 @@ end Ball;
 architecture Behavioral of Ball is
 	component BBox is
 	port (
-        clock       :   in  std_logic;
         triggerSet  :   in  std_logic;
 
         setX        :   in  integer;
@@ -85,19 +83,14 @@ begin
     getDeltaX   <=  deltaX;
     getDeltaY   <=  deltaY;
     
-    iTriggerSetPos      <= triggerSetPos or framerate;
+    iTriggerSetPos <= triggerSetPos;
     
-    iSetX <= setX       when triggerSetPos = '1'
-                        else iSetX + deltaX when framerate = '1'
-                        else iSetX;
-    iSetY <= setY       when triggerSetPos = '1'
-                        else iSetY + deltaY when framerate = '1'
-                        else iSetY;
-    deltaX <= setDeltaX when triggerSetDelta = '1'
-                        else deltaX;
-    deltaY <= setDeltaY when triggerSetDelta = '1'
-                        else deltaY;
+    iSetX <= setX when triggerSetPos = '1' else iSetX;                                     
+    iSetY <= setY when triggerSetPos = '1' else iSetY;
     
-	bbox_inst      :   BBox port map(clock, iTriggerSetPos, iSetX, iSetY, X, Y, radius, radius, getWidth, getHeight, '1');
+    deltaX <= setDeltaX when triggerSetDelta = '1' else deltaX;
+    deltaY <= setDeltaY when triggerSetDelta = '1' else deltaY;
+    
+	bbox_inst      :   BBox port map(iTriggerSetPos, iSetX, iSetY, X, Y, radius, radius, getWidth, getHeight, '1');
 	ellipse_inst   :   Ellipse port map(radius, ballColor, X, Y, '1', cursorX, cursorY, pixelOut);
 end Behavioral;

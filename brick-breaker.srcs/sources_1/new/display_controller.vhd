@@ -26,7 +26,6 @@ architecture Behavioral of display_controller is
 
     component Brick
     port (
-        clock       : in    std_logic;
         triggerSet	: in    std_logic;
 
         setX        : in    integer;
@@ -48,7 +47,6 @@ architecture Behavioral of display_controller is
     
     component Ball
     port (
-        clock           : in  std_logic;
         framerate       : in  std_logic;
         triggerSetPos   : in  std_logic;
         triggerSetDelta : in  std_logic;
@@ -159,13 +157,13 @@ begin
     -- Generate bricks --
     ---------------------
     generated_bricks : for I in 0 to 9 generate
-        brickX : Brick port map (clk, bricks_triggerSet, bricks_setX(I), bricks_setY(I), bricks_x(I), bricks_y(I), setAlive, bricks_alive(I), bricks_width(I), bricks_height(I), cursorX, cursorY, bricks_pixelOut(I));
+        brickX : Brick port map (bricks_triggerSet, bricks_setX(I), bricks_setY(I), bricks_x(I), bricks_y(I), setAlive, bricks_alive(I), bricks_width(I), bricks_height(I), cursorX, cursorY, bricks_pixelOut(I));
     end generate generated_bricks;
     
     -------------------
     -- Generate ball --
     -------------------
-    ballObject : Ball port map (clk, framerate, ball_triggerSetPos, ball_triggerSetDelta, ball_setX, ball_setY, ball_x, ball_y, ball_setDeltaX, ball_setDeltaY, ball_deltaX, ball_deltaY, ball_width, ball_height, cursorX, cursorY, ball_pixelOut);
+    ballObject : Ball port map (framerate, ball_triggerSetPos, ball_triggerSetDelta, ball_setX, ball_setY, ball_x, ball_y, ball_setDeltaX, ball_setDeltaY, ball_deltaX, ball_deltaY, ball_width, ball_height, cursorX, cursorY, ball_pixelOut);
 
     -- Set the video mode to 1920x1080x60Hz (150MHz pixel clock needed)
     hVisible    <= ZERO + 1920;

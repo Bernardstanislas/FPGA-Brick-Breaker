@@ -8,7 +8,6 @@ generic (
 	brickColor	:	std_logic_vector := x"777777"
 );
 port (
-	clock		:	in  std_logic;
 	triggerSet	:	in 	std_logic;
 
 	setX 		: 	in 	integer;
@@ -31,7 +30,6 @@ end Brick;
 architecture Behavioral of Brick is
 	component BBox is
 	port (
-		clock		:   in  std_logic;
 		triggerSet	:	in 	std_logic;
 
 		setX 		: 	in 	integer;
@@ -75,6 +73,6 @@ begin
     getY <= y;
     getAlive <= alive;
     
-	bbox_inst 		:	BBox port map(clock, triggerSet, setX, setY, x, y, width, height, getWidth, getHeight, setAlive, alive);
+	bbox_inst 		:	BBox port map(triggerSet, setX, setY, x, y, width, height, getWidth, getHeight, setAlive, alive);
 	rectangle_inst	:	Rectangle port map(width, height, brickColor, x, y, alive, cursorX, cursorY, pixelOut);
 end Behavioral;
