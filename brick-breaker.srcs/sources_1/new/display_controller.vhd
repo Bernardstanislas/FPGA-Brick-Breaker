@@ -1,9 +1,6 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
-use IEEE.NUMERIC_STD.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
 
 entity display_controller is
     Port ( clk   : in   STD_LOGIC;
@@ -46,9 +43,6 @@ architecture Behavioral of display_controller is
         
         x         : in integer;
         y         : in integer;
-        
-        deltaX    : in    integer;
-        deltaY    : in    integer;
           
         width     : out   integer;
         height    : out   integer;
@@ -66,8 +60,8 @@ architecture Behavioral of display_controller is
     
     signal   hcounter    : unsigned(11 downto 0) := (others => '0');
     signal   vcounter    : unsigned(11 downto 0) := (others => '0');
-    signal   cursorX     : integer := to_integer(hcounter);
-    signal   cursorY     : integer := to_integer(vcounter);
+    signal   cursorX     : integer := conv_integer(hcounter);
+    signal   cursorY     : integer := conv_integer(vcounter);
     
     constant ZERO        : unsigned(11 downto 0) := (others => '0');
     signal   hVisible    : unsigned(11 downto 0);
@@ -111,14 +105,13 @@ architecture Behavioral of display_controller is
     --------------------
     -- Ball signals --
     --------------------
-    signal ball_x       : integer := 960;
-    signal ball_y       : integer := 500;
-    signal ball_deltaX  : integer := 5;
-    signal ball_deltaY  : integer := 0;
+    signal ball_x       : integer range 0 to 1900 := 960;
+    signal ball_y       : integer range 0 to 1060 := 500;
+    signal ball_deltaX  : integer range -10 to 10 := 5;
+    signal ball_deltaY  : integer range -10 to 10 := 2;
     signal ball_width   : integer;
     signal ball_height  : integer;
     signal ball_pixelOut: std_logic_vector (23 downto 0);    
-    
 begin    
     framerate_generator : ClockSlower port map (clk, framerate);
     --------------------------
@@ -141,8 +134,7 @@ begin
     -------------------
     -- Generate ball --
     -------------------
-    
-    ballX : Ball port map (framerate, ball_x, ball_y, ball_deltaX, ball_deltaY, ball_width, ball_height, cursorX, cursorY, ball_pixelOut); 
+    ballX : Ball port map (framerate, ball_x, ball_y, ball_width, ball_height, cursorX, cursorY, ball_pixelOut); 
     
     -- Set the video mode to 1920x1080x60Hz (150MHz pixel clock needed)
     hVisible    <= ZERO + 1920;
@@ -184,6 +176,8 @@ end process;
 -- outputs the pixel color.         --
 --------------------------------------
 clk_process: process (clk)
+variable xSpeed : integer := 5;
+variable ySpeed : integer := 2;
    begin
       if rising_edge(clk) then 
          if vcounter >= vVisible or hcounter >= hVisible then 
@@ -223,19 +217,24 @@ clk_process: process (clk)
          else
             hCounter <= hCounter + 1;
          end if;
-
-        -- Screen content update
-        --if (ball_x <= 0) then
-        --    ball_deltaX <= 5;
-        --    ball_triggerSetDelta <= '1';
-        --elsif (ball_x + ball_width >= 1920) then
-        --    ball_deltaX <= -5;
-        --    ball_triggerSetDelta <= '1';
-        --else
-        --    ball_triggerSetDelta <= '0';
-        --end if;
-
+         if framerate = '1' then
+             ball_x <= ball_x + ball_deltaX;
+             ball_y <= ball_y + ball_deltaY;
+         end if;
+         
+         if (ball_x <= 50) then
+            ball_deltaX <= xSpeed;
+            ball_x <= 51;
+         elsif (ball_x >= 1850) then
+            ball_deltaX <= -xSpeed;
+            ball_x <= 1849;
+         elsif (ball_y <= 50) then
+            ball_deltaY <= ySpeed;
+            ball_y <= 51;
+         elsif (ball_y >= 1010) then
+            ball_deltaY <= -ySpeed;
+            ball_y <= 1009;
+         end if;
      end if;
 end process;
-
-end Behavioral;
+ end Behavioral;

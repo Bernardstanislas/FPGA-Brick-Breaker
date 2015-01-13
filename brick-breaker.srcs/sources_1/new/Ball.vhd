@@ -4,7 +4,7 @@ use IEEE.STD_LOGIC_ARITH.ALL;
 
 entity Ball is
 generic (
-    radius    : integer          := 10;
+    radius    : integer          := 20;
 	ballColor : std_logic_vector := x"FF0000"
 );
 port (
@@ -12,9 +12,6 @@ port (
     
 	x         : in integer;
 	y 	      : in integer;
-	
-	deltaX    : in    integer;
-    deltaY    : in    integer;
       
 	width     : out   integer;
 	height    : out   integer;
@@ -41,13 +38,10 @@ architecture Behavioral of Ball is
         pixelOut : out std_logic_vector 
     );
 	end component;
-
+    signal alive : std_logic := '1';
 begin
-    width  <= 2 * radius;
-    height <= 2 * radius;
+    width  <= radius;
+    height <= radius;
     
-    --x <= x + deltaX when framerate = '1' else y;
-    --y <= y + deltaY when framerate = '1' else y;
-    
-	ellipse_inst : Ellipse port map(radius, ballColor, x, y, '1', cursorX, cursorY, pixelOut);
+	ellipse_inst : Ellipse port map(radius, ballColor, x, y, alive, cursorX, cursorY, pixelOut);
 end Behavioral;

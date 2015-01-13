@@ -20,8 +20,6 @@ end Ellipse;
 
 architecture Behavioral of Ellipse is
 begin
-    --pixelOut <= color when ( ((cursorX-(x+width / 2))**2) * (height**2) + ((cursorY-(y+height / 2))**2)*(width**2) <= (width**2)* (height**2) ) and alive = '1'
-    --            else x"000000";
-    pixelOut <= color when (cursorX >= x - radius and cursorX <= y + radius and cursorY >= y - radius and cursorY <= y + radius) and alive = '1'
+    pixelOut <= color when (cursorX >= x and cursorX <= x + radius and cursorY >= y and cursorY <= y + radius) and alive = '1'
                     else x"000000"; 
 end Behavioral;
