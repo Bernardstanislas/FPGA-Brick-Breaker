@@ -26,13 +26,13 @@ architecture Behavioral of display_controller is
 
     component Brick
     port (
-        x             : in  integer;
-        y             : in  integer;
+        x           : in  integer;
+        y           : in  integer;
         
         alive       : in  std_logic;
         
         width       : out integer;
-        height        : out integer;
+        height      : out integer;
     
         cursorX     : in  integer;
         cursorY     : in  integer;
@@ -44,8 +44,8 @@ architecture Behavioral of display_controller is
     port (
         framerate : in    std_logic;
         
-        x         : inout integer;
-        y           : inout integer;
+        x         : in integer;
+        y         : in integer;
         
         deltaX    : in    integer;
         deltaY    : in    integer;

@@ -10,8 +10,8 @@ generic (
 port (
     framerate : in    std_logic;
     
-	x         : inout integer;
-	y 	      : inout integer;
+	x         : in integer;
+	y 	      : in integer;
 	
 	deltaX    : in    integer;
     deltaY    : in    integer;
@@ -46,8 +46,8 @@ begin
     width  <= 2 * radius;
     height <= 2 * radius;
     
-    x <= x + deltaX when framerate = '1' else y;
-    y <= y + deltaY when framerate = '1' else y;
+    --x <= x + deltaX when framerate = '1' else y;
+    --y <= y + deltaY when framerate = '1' else y;
     
 	ellipse_inst : Ellipse port map(radius, ballColor, x, y, '1', cursorX, cursorY, pixelOut);
 end Behavioral;
