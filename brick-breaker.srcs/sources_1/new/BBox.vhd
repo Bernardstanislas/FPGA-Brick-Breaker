@@ -34,21 +34,22 @@ begin
 	getWidth <= width;
 	getHeight <= height;
 	getAlive <= alive;
-
-	process(clock)
-	begin
-		if (triggerSet = '1') then
-			x <= setX;
-			y <= setY;
-			width <= setWidth;
-			height <= setHeight;
-			alive <= setAlive;
-		else
-			x <= x;
-			y <= y;
-			width <= width;
-			height <= height;
-			alive <= alive;
-		end if;
-	end process;
+    
+    process
+    begin
+        case triggerSet is
+            when '1' =>
+                x <= setX;
+                y <= setY;
+                width <= setWidth;
+                height <= setHeight;
+                alive <= setAlive;
+            when '0' =>
+                x <= x;
+                y <= y;
+                width <= width;
+                height <= height;
+                alive <= alive;
+        end case;
+    end process;
 end Behavioral;

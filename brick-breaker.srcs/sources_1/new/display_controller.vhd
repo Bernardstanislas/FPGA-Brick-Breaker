@@ -129,8 +129,8 @@ architecture Behavioral of display_controller is
     --------------------
     -- Ball signals --
     --------------------
-    signal ball_triggerSetPos    : std_logic := '0';
-    signal ball_triggerSetDelta  : std_logic := '0';
+    signal ball_triggerSetPos    : std_logic := '1';
+    signal ball_triggerSetDelta  : std_logic := '1';
     signal ball_setX             : integer := 960;
     signal ball_setY             : integer := 500;
     signal ball_setDeltaX        : integer := 5;
@@ -253,15 +253,16 @@ clk_process: process (clk)
          else
             bricks_triggerSet <= '0';
             ball_triggerSetPos <= '0';
-            if (ball_x <= 0) then
-                ball_deltaX <= 5;
-                ball_triggerSetDelta <= '1';
-            elsif (ball_x + ball_width >= 1920) then
-                ball_deltaX <= -5;
-                ball_triggerSetDelta <= '1';
-            else
-                ball_triggerSetDelta <= '0';
-            end if;
+            ball_triggerSetDelta <= '0';
+            --if (ball_x <= 0) then
+            --    ball_deltaX <= 5;
+            --    ball_triggerSetDelta <= '1';
+            --elsif (ball_x + ball_width >= 1920) then
+            --    ball_deltaX <= -5;
+            --    ball_triggerSetDelta <= '1';
+            --else
+            --    ball_triggerSetDelta <= '0';
+            --end if;
         end if;
         ---------------------------
      end if;
